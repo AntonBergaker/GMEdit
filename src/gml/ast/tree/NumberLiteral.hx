@@ -10,13 +10,19 @@ class NumberLiteral extends Returnable {
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return number;
+		return before + number + after;
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
 		return number;
+	}
+
+	/** Returns all child nodes to this node
+	**/
+	public override function getChildren(): Array<AstNode> {
+		return [];
 	}
 
 	/** Compares against anothor of itself

@@ -10,7 +10,7 @@ class TypeDefinition extends AstNode {
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return typeName;
+		return before + typeName + after;
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
@@ -18,6 +18,13 @@ class TypeDefinition extends AstNode {
 	public override function toSyntaxString() : String {
 		return typeName;
 	}
+
+	/** Returns all child nodes to this node
+	**/
+	public override function getChildren(): Array<AstNode> {
+		return [];
+	}
+
 	/** Compares against anothor of itself
 	**/
 	public function valueEquals(other:TypeDefinition): Bool {

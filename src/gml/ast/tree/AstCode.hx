@@ -4,6 +4,7 @@ package gml.ast.tree;
 **/
 class AstCode extends AstNode {
 	var statements: StatementList;
+	public var errors: Array<String>;
 
 	public function new(statements:StatementList) {
 		this.statements = statements;
@@ -25,5 +26,11 @@ class AstCode extends AstNode {
 	**/
 	public function valueEquals(other:AstCode): Bool {
 		return statements.valueEquals(other.statements);
+	}
+
+	/** Returns all child nodes to this node
+	**/
+	public override function getChildren(): Array<AstNode> {
+		return statements.getChildren();
 	}
 }

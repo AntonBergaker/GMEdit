@@ -18,8 +18,8 @@ class VarDefinition extends AstNode {
 	public override function toCompleteString() : String {
 		return "var " +
 		this.variableName +
-		(this.type == null ? '' : ': ' + this.type.toCompleteString()) +
-		(this.initialValue == null ? '' : ' = ' + this.initialValue.toCompleteString());
+		(this.type == null ? '' : ':' + this.type.toCompleteString()) +
+		(this.initialValue == null ? '' : '=' + this.initialValue.toCompleteString());
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
@@ -30,12 +30,28 @@ class VarDefinition extends AstNode {
 		(this.type == null ? '' : ': ' + this.type.toSyntaxString()) +
 		(this.initialValue == null ? '' : ' = ' + this.initialValue.toSyntaxString());
 	}
+
+	/** Returns all child nodes to this node
+	**/
+	public override function getChildren(): Array<AstNode> {
+		if (type != null && initialValue != null) {
+			return [type, initialValue];
+		}
+		if (type != null) {
+			return [type];
+		}
+		if (initialValue != null) {
+			return [initialValue];
+		}
+		return [];
+	}
+
 	/** Compares against anothor of itself
 	**/
 	public function valueEquals(other:VarDefinition): Bool {
 		return 
-			initialValue.equals(other.initialValue) && 
+			AstNode.equals(initialValue, other.initialValue) && 
 			variableName == other.variableName &&
-			type.valueEquals(other.type);
+			AstNode.equals(type, other.type);
 	}
 }

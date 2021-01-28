@@ -173,7 +173,16 @@ using tools.NativeString;
 			c = peek();
 		}
 	}
+
+	/** Reads a number*/
+	public function readNumber():String {
+		var start = pos;
+		skipNumber();
+		return substring(start,pos);
+	}
+
 	
+	/**Skips the remainder of an already opened hex*/
 	public function skipHex():Void {
 		var c = peek();
 		while (loopLocal) {
@@ -182,6 +191,13 @@ using tools.NativeString;
 				c = peek();
 			} else break;
 		}
+	}
+
+	/** Reads the remainder of an already opened hex*/
+	public function readHex():String {
+		var start = pos;
+		skipHex();
+		return substring(start,pos);
 	}
 	
 	/** Reads the remainder of an already opened string */
@@ -388,6 +404,13 @@ using tools.NativeString;
 			}
 		}
 		return n;
+	}
+
+	/** Reads comments and whitespace*/
+	public function readNops():String {
+		var start = pos;
+		skipNops();
+		return substring(start, pos);
 	}
 	
 	/**
