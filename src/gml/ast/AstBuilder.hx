@@ -97,6 +97,17 @@ class AstBuilder {
 			}
 
 			var afterIdentifier = reader.readNops();
+			var type = null;
+			var nextOp = reader.read();
+			if (nextOp == ':'.code) {
+				type = readType();
+				nextOp = reader.read();
+			}
+			if (nextOp == '='.code) {
+				var assignment = new Assignment(identifier, type, readExpression());
+				assignment.afterIdentifier = afterIdentifier;
+				return localReturn(assignment);
+			} 
 		}
 
 		return null;
@@ -134,11 +145,7 @@ class AstBuilder {
 		var next = reader.peek();
 		if (next == ':'.code) {
 			reader.skip();
-			var typeBefore = reader.readNops();
-			var typeName = reader.readIdent();
-			typeDefinition = new TypeDefinition(typeName);
-			typeDefinition.before = typeBefore;
-			typeDefinition.after = reader.readNops();
+			typeDefinition = readType();
 			next = reader.peek();
 		}
 		if (next == '='.code) {
@@ -152,8 +159,22 @@ class AstBuilder {
 		return returnAst(ast);
 	}
 
+	/**Reads a type, assumes : has already been read*/
+	private function readType():TypeDefinition {
+		var typeBefore = reader.readNops();
+		var typeName = reader.readIdent();
+		var typeDefinition = new TypeDefinition(typeName);
+		typeDefinition.before = typeBefore;
+		typeDefinition.after = reader.readNops();
+		return typeDefinition;
+	}
+
 	private function readExpression() : Returnable {
-		return returnAst(readTernary());
+		var before = reader.readNops();
+		var ast = readTernary();
+		ast.before = before + ast.before;
+		ast.after += reader.readNops();
+		return returnAst(ast);
 	}
 
 	private function readTernary() : Returnable {

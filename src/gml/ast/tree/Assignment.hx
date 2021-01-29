@@ -41,9 +41,9 @@ class Assignment extends AstNode {
 
 	/** Compares against another of itself
 	**/
-	public function valueEquals(other:LocalVarDefinitionEntry): Bool {
+	public function valueEquals(other:Assignment): Bool {
 		return 
-			AstNode.equals(value, other.initialValue) && 
+			AstNode.equals(value, other.value) && 
 			variableName == other.variableName &&
 			AstNode.equals(type, other.type);
 	}
