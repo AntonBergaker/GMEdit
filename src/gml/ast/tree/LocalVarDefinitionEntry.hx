@@ -1,6 +1,6 @@
 package gml.ast.tree;
 
-class VarDefinitionEntry extends AstNode {
+class LocalVarDefinitionEntry extends AstNode {
 	public var variableName: String;
 	public var afterIdentifier: String = "";
 	public var type: TypeDefinition;
@@ -47,7 +47,7 @@ class VarDefinitionEntry extends AstNode {
 
 	/** Compares against another of itself
 	**/
-	public function valueEquals(other:VarDefinitionEntry): Bool {
+	public function valueEquals(other:LocalVarDefinitionEntry): Bool {
 		return 
 			AstNode.equals(initialValue, other.initialValue) && 
 			variableName == other.variableName &&

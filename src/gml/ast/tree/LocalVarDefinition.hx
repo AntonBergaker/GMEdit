@@ -2,9 +2,9 @@ package gml.ast.tree;
 
 
 class LocalVarDefinition extends AstNode {
-    public var varDefinitions:Array<VarDefinitionEntry>;
+    public var varDefinitions:Array<LocalVarDefinitionEntry>;
 
-    public function new(varDefinitions:Array<VarDefinitionEntry>) {
+    public function new(varDefinitions:Array<LocalVarDefinitionEntry>) {
         this.varDefinitions = varDefinitions;
     }
 

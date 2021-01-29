@@ -13,7 +13,7 @@ class LocalVarDefinitionTest {
 	@Test public function testLocalVarDefinition() {
 		treeEquals("var a = 5",
 			new LocalVarDefinition([
-				new VarDefinitionEntry("a", null,
+				new LocalVarDefinitionEntry("a", null,
 					new NumberLiteral("5")
 				)
 			])
@@ -21,7 +21,7 @@ class LocalVarDefinitionTest {
 
 		treeEquals("var a:number = 5",
 			new LocalVarDefinition([
-				new VarDefinitionEntry("a",
+				new LocalVarDefinitionEntry("a",
 					new TypeDefinition("number"),
 					new NumberLiteral("5")
 				)
@@ -30,8 +30,8 @@ class LocalVarDefinitionTest {
 
 		treeEquals("var a, b = 5",
 			new LocalVarDefinition([
-				new VarDefinitionEntry("a", null, null),
-				new VarDefinitionEntry("b", null,
+				new LocalVarDefinitionEntry("a", null, null),
+				new LocalVarDefinitionEntry("b", null,
 					new NumberLiteral("5")
 				)
 			])
@@ -39,11 +39,11 @@ class LocalVarDefinitionTest {
 
 		treeEquals("var a:number = 4, b:string = \"5\"",
 			new LocalVarDefinition([
-				new VarDefinitionEntry("a", 
+				new LocalVarDefinitionEntry("a", 
 					new TypeDefinition("number"),
 					new NumberLiteral("4")
 				),
-				new VarDefinitionEntry("b", 
+				new LocalVarDefinitionEntry("b", 
 					new TypeDefinition("string"),
 					new StringLiteral("5")
 				)

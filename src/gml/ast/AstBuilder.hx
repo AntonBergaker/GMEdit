@@ -84,15 +84,19 @@ class AstBuilder {
 				lastAst.after += ";";
 		}
 
-		var identifier = reader.readIdent();
-		var keyword = keywords[identifier];
-		if (keyword != null) {
-			switch (keyword) {
-				case KVar:
-					return localReturn(readLocalVarDefinition());
-				default:
-					return null;
-			} 
+		if (peek.isIdent0()) {
+			var identifier = reader.readIdent();
+			var keyword = keywords[identifier];
+			if (keyword != null) {
+				switch (keyword) {
+					case KVar:
+						return localReturn(readLocalVarDefinition());
+					default:
+						return null;
+				}
+			}
+
+			var afterIdentifier = reader.readNops();
 		}
 
 		return null;
@@ -102,7 +106,7 @@ class AstBuilder {
 	*/
 	private function readLocalVarDefinition():LocalVarDefinition {
 		var end;
-		var entries = new Array<VarDefinitionEntry>();
+		var entries = new Array<LocalVarDefinitionEntry>();
 		do {
 			var entry = readVarDefinitionEntry();
 			end = reader.readNops();
@@ -121,7 +125,7 @@ class AstBuilder {
 		return returnAst(ast);
 	}
 
-	private function readVarDefinitionEntry():VarDefinitionEntry {
+	private function readVarDefinitionEntry():LocalVarDefinitionEntry {
 		var before = reader.readNops();
 		var ident = reader.readIdent();
 		var afterIdentNop = reader.readNops();
@@ -142,14 +146,33 @@ class AstBuilder {
 			assignment = readExpression();
 		}
 
-		var ast = new VarDefinitionEntry(ident, typeDefinition, assignment);
+		var ast = new LocalVarDefinitionEntry(ident, typeDefinition, assignment);
 		ast.afterIdentifier = afterIdentNop;
 		ast.before = before;
 		return returnAst(ast);
 	}
 
 	private function readExpression() : Returnable {
-		return returnAst(readBitwiseOperators());
+		return returnAst(readTernary());
+	}
+
+	private function readTernary() : Returnable {
+		var comparison = readBitwiseOperators();
+
+		var peek = reader.peek();
+		if (peek == '?'.code) {
+			reader.skip();
+			var lhs = readBitwiseOperators();
+			var read = reader.read();
+			if (read != ':'.code) {
+				addError("");
+				return null;
+			}
+			var rhs = readBitwiseOperators();
+			return returnAst(new Ternary(comparison, lhs, rhs));
+		}
+
+		return returnAst(comparison);
 	}
 
 	// These are very expressive and could all be generalized, but there's no good structure to store it in
@@ -347,7 +370,6 @@ class AstBuilder {
 
 
 	private function readLiteral() : Returnable {
-		js.Lib.debug();
 		function localReturn(ast: Returnable) {
 			ast.after += reader.readNopsTillNewline();
 			return returnAst(ast);
@@ -378,6 +400,10 @@ class AstBuilder {
 			var ast = new StringLiteral(string);
 			ast.before = before;
 			return localReturn(ast);
+		}
+
+		if (peek.isIdent0()) {
+			var identifier = reader.readIdent();
 		}
 
 		return null;
