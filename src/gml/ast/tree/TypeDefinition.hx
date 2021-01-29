@@ -25,7 +25,7 @@ class TypeDefinition extends AstNode {
 		return [];
 	}
 
-	/** Compares against anothor of itself
+	/** Compares against another of itself
 	**/
 	public function valueEquals(other:TypeDefinition): Bool {
 		return typeName == other.typeName;

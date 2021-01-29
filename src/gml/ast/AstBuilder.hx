@@ -39,7 +39,6 @@ class AstBuilder {
 	/**Reads statements until it encounters a closing }**/
 	private function readStatementList():StatementList {
 		var statements:Array<AstNode> = new Array();
-		var pre = reader.readNops();
 		while (true) {
 			if (reader.eof) {
 				break;
@@ -52,6 +51,8 @@ class AstBuilder {
 
 			var statement = readStatement();
 			if (statement != null) {
+				var after = reader.readNopsTillNewline();
+				statement.after += after;
 				statements.push(statement);
 			}
 		}
@@ -60,13 +61,18 @@ class AstBuilder {
 	}
 
 	private function readStatement():AstNode {
-		var pre = reader.skipNops();
+		var pre = reader.readNops();
+
+		inline function localReturn(ast:AstNode):AstNode {
+			ast.before = pre + ast.before;
+			return returnAst(ast);
+		}
 
 		var peek = reader.peek();
 		switch (peek) {
 			case '{'.code:
 				reader.skip();
-				return returnAst(readStatementList());
+				return localReturn(readStatementList());
 			case ';'.code:
 				reader.skip();
 				lastAst.after += ";";
@@ -75,7 +81,7 @@ class AstBuilder {
 		var identifier = reader.readIdent();
 		switch (identifier) {
 			case "var":
-				return returnAst(readVarDefinition());
+				return localReturn(readLocalVarDefinition());
 		} 
 
 		return null;
@@ -83,10 +89,31 @@ class AstBuilder {
 
 	/**Assumes var has already been read
 	*/
-	private function readVarDefinition():VarDefinition {
+	private function readLocalVarDefinition():LocalVarDefinition {
+		var end;
+		var entries = new Array<VarDefinitionEntry>();
+		do {
+			var entry = readVarDefinitionEntry();
+			end = reader.readNops();
+			var next = reader.peek();
+			entries.push(entry);
+			if (next == ','.code) {
+				reader.skip();
+				entry.after = end;
+			} else {
+				break;
+			}
+		} while(true);
+		
+		var ast = new LocalVarDefinition(entries);
+		ast.after = end;
+		return returnAst(ast);
+	}
+
+	private function readVarDefinitionEntry():VarDefinitionEntry {
 		var before = reader.readNops();
 		var ident = reader.readIdent();
-		var after = reader.readNops();
+		var afterIdentNop = reader.readNops();
 		var typeDefinition:TypeDefinition = null;
 		var assignment:Returnable = null;
 		var next = reader.peek();
@@ -104,7 +131,8 @@ class AstBuilder {
 			assignment = readExpression();
 		}
 
-		var ast = new VarDefinition(ident, typeDefinition, assignment);
+		var ast = new VarDefinitionEntry(ident, typeDefinition, assignment);
+		ast.afterIdentifier = afterIdentNop;
 		ast.before = before;
 		return returnAst(ast);
 	}
@@ -116,9 +144,24 @@ class AstBuilder {
 	private function readLiteral() : Returnable {
 		var before = reader.readNops();
 		var peek = reader.peek();
+		// If the literal is a number
 		if (peek.isDigit()) {
-			var number = reader.readNumber();
+			var number;
+			if (peek == '0'.code && reader.peek(1) == 'x'.code) {
+				number = reader.readHex();
+			} else {
+				number = reader.readNumber();
+			}
 			var ast = new NumberLiteral(number);
+			ast.before = before;
+			return returnAst(ast);
+		}
+		// If the literal is a string
+		if (peek == '"'.code || peek == "'".code ||
+			peek == '`'.code) {
+			reader.skip();
+			var string = reader.readStringAuto(peek);
+			var ast = new StringLiteral(string);
 			ast.before = before;
 			return returnAst(ast);
 		}

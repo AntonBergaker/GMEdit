@@ -229,6 +229,12 @@ using tools.NativeString;
 			default: return 0;
 		}
 	}
+
+	public function readStringAuto(startquote:CharCode):String {
+		var start = pos;
+		skipStringAuto(startquote, version);
+		return substring(start, pos-1); // -1 because pos went past the quote
+	}
 	
 	/** Skips spaces/tabs */
 	public function skipSpaces0() {
@@ -406,10 +412,34 @@ using tools.NativeString;
 		return n;
 	}
 
+	public function skipNopsTillNewline() {
+		while (pos < length) {
+			var c = peek();
+			switch (c) {
+				case " ".code, "\t".code, "\r".code: skip();
+				case "\n".code: skip(); return;
+				case "/".code: switch (peek(1)) {
+					case "/".code: skipLine();
+					case "*".code: skip(2);
+					default: break;
+				};
+				default: break;
+			}
+		}
+		return;
+	}
+
 	/** Reads comments and whitespace*/
 	public function readNops():String {
 		var start = pos;
 		skipNops();
+		return substring(start, pos);
+	}
+
+	/** Reads comments and whitespace until it encounters a new line*/
+	public function readNopsTillNewline():String {
+		var start = pos;
+		skipNopsTillNewline();
 		return substring(start, pos);
 	}
 	

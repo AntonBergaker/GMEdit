@@ -1,22 +1,22 @@
 package gml.ast.tree;
 
-class NumberLiteral extends Returnable {
-    public var number : String;
+class StringLiteral extends Returnable {
+    public var string : String;
 
-    public function new(number:String) {
-		this.number = number;
+    public function new(string:String) {
+		this.string = string;
     }
 
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return before + number + after;
+		return before + "\"" + string + "\"" + after;
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
-		return number;
+		return "\"" + string + "\"";
 	}
 
 	/** Returns all child nodes to this node
@@ -27,7 +27,7 @@ class NumberLiteral extends Returnable {
 
 	/** Compares against another of itself
 	**/
-	public function valueEquals(other:NumberLiteral): Bool {
-		return number == other.number;
+	public function valueEquals(other:StringLiteral): Bool {
+		return string == other.string;
 	}
 }

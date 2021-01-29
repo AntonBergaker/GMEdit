@@ -35,7 +35,7 @@ class StatementList extends AstNode {
 		return statements;
 	}
 
-	/** Compares against anothor of itself
+	/** Compares against another of itself
 	**/
 	public function valueEquals(other:StatementList): Bool {
 		if (other.statements.length != statements.length) {

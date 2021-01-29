@@ -1,13 +1,7 @@
 package gml.ast;
 
-import gml.ast.tree.TypeDefinition;
 import haxe.extern.EitherType;
-import gml.ast.tree.AstNode;
-import gml.ast.tree.NumberLiteral;
-import gml.ast.tree.VarDefinition;
-import gml.ast.tree.AstCode;
-import haxe.display.Protocol.Version;
-import gml.ast.tree.StatementList;
+import gml.ast.tree.*;
 import massive.munit.Assert;
 
 class AstBuilderTest {
@@ -16,27 +10,55 @@ class AstBuilderTest {
 		builder = new AstBuilder(GmlVersion.v2);
 	}
 
-	@Test public function testVarDefinition() {
+	@Test public function testLocalVarDefinition() {
 		treeEquals("var a = 5",
-			new VarDefinition("a", null,
-				new NumberLiteral("5")
-			)
+			new LocalVarDefinition([
+				new VarDefinitionEntry("a", null,
+					new NumberLiteral("5")
+				)
+			])
 		);
 
 		treeEquals("var a:number = 5",
-			new VarDefinition("a",
-				new TypeDefinition("number"),
-				new NumberLiteral("5")
-			)
+			new LocalVarDefinition([
+				new VarDefinitionEntry("a",
+					new TypeDefinition("number"),
+					new NumberLiteral("5")
+				)
+			])
+		);
+
+		treeEquals("var a, b = 5",
+			new LocalVarDefinition([
+				new VarDefinitionEntry("a", null, null),
+				new VarDefinitionEntry("b", null,
+					new NumberLiteral("5")
+				)
+			])
+		);
+
+		treeEquals("var a:number = 4, b:string = \"5\"",
+			new LocalVarDefinition([
+				new VarDefinitionEntry("a", 
+					new TypeDefinition("number"),
+					new NumberLiteral("4")
+				),
+				new VarDefinitionEntry("b", 
+					new TypeDefinition("string"),
+					new StringLiteral("5")
+				)
+			])
 		);
 	}
 
 	@Test public function testExpression() {
 		treeEquals("var a:number = 5",
-			new VarDefinition("a",
-				new TypeDefinition("number"),
-				new NumberLiteral("5")
-			)
+			new LocalVarDefinition([
+				new VarDefinitionEntry("a",
+					new TypeDefinition("number"),
+					new NumberLiteral("5")
+				)
+			])
 		);
 
 	}
@@ -47,11 +69,11 @@ class AstBuilderTest {
 			"var a:number = 5;",
 			"var a:number = 5",
 			"var a:number=5",
-			"var /*comment*/ a    :   number =   5;;;;"
+			"var /*comment*/ a    :   number =   5;;;;",
+			"/*comment*/ var a = 5 //comment",
 		];
 
 		for (code in codes) {
-			Console.log(code);
 			var result = builder.build(code);
 			Assert.areEqual(code, result.toCompleteString());
 		}
