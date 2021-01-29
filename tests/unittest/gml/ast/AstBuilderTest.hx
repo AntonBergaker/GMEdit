@@ -56,7 +56,12 @@ class AstBuilderTest {
 			new LocalVarDefinition([
 				new VarDefinitionEntry("a",
 					new TypeDefinition("number"),
-					new NumberLiteral("5")
+					new Operation(
+						new NumberLiteral("5"),
+						new NumberLiteral("3"),
+						KAdd,
+						"+"
+					)
 				)
 			])
 		);
@@ -65,7 +70,13 @@ class AstBuilderTest {
 		new LocalVarDefinition([
 			new VarDefinitionEntry("a",
 				new TypeDefinition("number"),
-				new NumberLiteral("5")
+				new Operation(
+					new NumberLiteral("5"),
+					new Operation(
+						new NumberLiteral("3"),
+						new NumberLiteral("2"),
+					KMul, '*'),
+				KAdd,"+")
 			)
 		])
 	);

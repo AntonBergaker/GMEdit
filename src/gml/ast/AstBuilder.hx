@@ -14,13 +14,9 @@ class AstBuilder {
 	var lastAst:AstNode;
 	var keywords:Dictionary<GmlLinterKind>;
 
-	var operators = [
-
-	];
-
 	public function new(gmlVersion:GmlVersion) {
 		this.gmlVersion = gmlVersion;
-		keywords = GmlLinterInit.keywords(gmlVersion.config.additionalKeywords);
+		keywords = GmlLinterInit.keywords(gmlVersion.config);
 	}
 
 	private function addError(error: String) {
@@ -118,7 +114,7 @@ class AstBuilder {
 			} else {
 				break;
 			}
-		} while(true);
+		} while (true);
 		
 		var ast = new LocalVarDefinition(entries);
 		ast.after = end;
@@ -153,40 +149,108 @@ class AstBuilder {
 	}
 
 	private function readExpression() : Returnable {
-		return returnAst(readLiteral());
+		return returnAst(readBinaryShift());
+	}
+
+	// These are very expressive and could all be generalized, but there's no good structure to store it in
+	
+	private function readBinaryShift() : Returnable {
+		var next = readAdditionSubtraction;
+		var lhs = next();
+		while(true) {
+			var peek = reader.peek();
+			if (peek == '>'.code && reader.peek(1) == '>'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, next(), KShr, '>>');
+			} else if (peek == '<'.code && reader.peek(1) == '<'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, next(), KShl, '<<');
+			} else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
+	}
+	
+	private function readAdditionSubtraction() : Returnable {
+		var lhs = this.readMultiplicationDivision();
+		while(true) {
+			var peek = reader.peek();
+			if (peek == '+'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, readMultiplicationDivision(), KAdd, '+');
+			} else if (peek == '-'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, readMultiplicationDivision(), KSub, '-');
+			} else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
+	}
+
+
+	private function readMultiplicationDivision() : Returnable {
+		var lhs = this.readLiteral();
+
+		while(true) {
+			var peek = reader.peek();
+			if (peek == '*'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, readLiteral(), KMul, '*');
+			} else if (peek == '/'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, readLiteral(), KDiv, '/');
+			} else if (peek == 'm'.code && reader.peek(1) == 'o'.code && reader.peek(2) == 'd'.code) {
+				reader.skip(3);
+				lhs = new Operation(lhs, readLiteral(), KMod, 'mod');
+			} else if (peek == 'd'.code && reader.peek(1) == 'i'.code && reader.peek(2) == 'v'.code) {
+				reader.skip(3);
+				lhs = new Operation(lhs, readLiteral(), KDiv, 'div');
+			} else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
 	}
 
 
 
-
-
-
-
-
 	private function readLiteral() : Returnable {
+		js.Lib.debug();
+		function localReturn(ast: Returnable) {
+			ast.after += reader.readNopsTillNewline();
+			return returnAst(ast);
+		}
+
 		var before = reader.readNops();
 		var peek = reader.peek();
 		// If the literal is a number
 		if (peek.isDigit()) {
 			var number;
 			if (peek == '0'.code && reader.peek(1) == 'x'.code) {
+				reader.skip();
+				reader.skip();
 				number = reader.readHex();
 			} else {
 				number = reader.readNumber();
 			}
 			var ast = new NumberLiteral(number);
 			ast.before = before;
-			return returnAst(ast);
+			return localReturn(ast);
 		}
 
 		// If the literal is a string
 		if (peek == '"'.code || peek == "'".code ||
-			peek == '`'.code) {
+			peek == '`'.code || peek == '@'.code) {
 			reader.skip();
 			var string = reader.readStringAuto(peek);
 			var ast = new StringLiteral(string);
 			ast.before = before;
-			return returnAst(ast);
+			return localReturn(ast);
 		}
 
 		return null;

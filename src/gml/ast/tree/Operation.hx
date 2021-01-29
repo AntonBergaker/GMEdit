@@ -2,7 +2,7 @@ package gml.ast.tree;
 
 import parsers.linter.GmlLinterKind;
 
-class Operator extends Returnable {
+class Operation extends Returnable {
 	public var lhs: Returnable;
 	public var rhs: Returnable;
 	public var opString: String;
@@ -34,7 +34,7 @@ class Operator extends Returnable {
 
 	/** Compares against another of itself
 	**/
-	public function valueEquals(other:Operator): Bool {
+	public function valueEquals(other:Operation): Bool {
 		return opKind == other.opKind &&
 			AstNode.equals(lhs, other.lhs) &&
 			AstNode.equals(rhs, other.rhs);
