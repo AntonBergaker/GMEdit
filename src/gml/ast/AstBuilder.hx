@@ -149,22 +149,26 @@ class AstBuilder {
 	}
 
 	private function readExpression() : Returnable {
-		return returnAst(readBinaryShift());
+		return returnAst(readBitwiseOperators());
 	}
 
 	// These are very expressive and could all be generalized, but there's no good structure to store it in
-	
-	private function readBooleanComparisons() : Returnable {
-		var next = readAdditionSubtraction;
+	private function readBitwiseOperators() : Returnable {
+		var next = readBooleanComparisons;
 		var lhs = next();
+
 		while(true) {
 			var peek = reader.peek();
-			if (peek == '>'.code && reader.peek(1) == '>'.code) {
-				reader.skip(2);
-				lhs = new Operation(lhs, KShr, '>>', next());
-			} else if (peek == '<'.code && reader.peek(1) == '<'.code) {
-				reader.skip(2);
-				lhs = new Operation(lhs, KShl, '<<', next());
+			var nextPeek = reader.peek(1);
+			if (peek == '|'.code && nextPeek != '|'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, KOr, '|',  next());
+			} else if (peek == '&'.code && nextPeek != '&'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, KAnd, '&',  next());
+			} else if (peek == '^'.code && nextPeek != '^'.code) {
+				reader.skip();
+				lhs = new Operation(lhs, KXor, '^',  next());
 			} else {
 				break;
 			}
@@ -173,7 +177,109 @@ class AstBuilder {
 		return returnAst(lhs);
 	}
 
-	private function readBinaryShift() : Returnable {
+	private function readBooleanComparisons() : Returnable {
+		var next = readBooleanLogicalOperations;
+		var lhs = next();
+		while(true) {
+			var peek = reader.peek();
+			
+			// Equals
+			if (peek == '='.code) {
+				var nextPeek = reader.peek(1);
+				if (nextPeek == '='.code) {
+					reader.skip(2);
+					lhs = new Operation(lhs, KEQ, '==',  next());
+				} else {
+					reader.skip();
+					lhs = new Operation(lhs, KEQ, '=',  next());
+				}
+			} else if (peek == ':'.code && reader.peek(1) == '='.code) { // so cursed
+				reader.skip(2);
+				lhs = new Operation(lhs, KEQ, 'and',  next());
+			}
+
+			// Not equals
+			else if (peek == '!'.code && reader.peek(1) == '='.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KNE, '!=',  next());
+			}
+			
+			// Lesser than
+			else if (peek == '<'.code) {
+				var nextPeek = reader.peek(1);
+				if (nextPeek == '<'.code) {
+					// Not the operator we're looking for
+					break;
+				}
+				if (nextPeek == '='.code) {
+					reader.skip(2);
+					lhs = new Operation(lhs, KLE, '<=',  next());
+				} else {
+					reader.skip();
+					lhs = new Operation(lhs, KLT, '<',  next());
+				}
+			}
+
+			// Greater than
+			else if (peek == '>'.code) {
+				var nextPeek = reader.peek(1);
+				if (nextPeek == '>'.code) {
+					// Not the operator we're looking for
+					break;
+				}
+				if (nextPeek == '='.code) {
+					reader.skip(2);
+					lhs = new Operation(lhs, KGE, '>=',  next());
+				} else {
+					reader.skip();
+					lhs = new Operation(lhs, KGT, '>',  next());
+				}
+			}
+			
+			else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
+	}
+
+	private function readBooleanLogicalOperations(): Returnable {
+		var next = readBinaryShift;
+		var lhs = next();
+		while(true) {
+			var peek = reader.peek();
+			if (peek == '&'.code && reader.peek(1) == '&'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KBoolAnd, '&&',  next());
+			} else if (peek == 'a'.code && reader.peek(1) == 'n'.code && reader.peek(2) == 'd'.code) {
+				reader.skip(3);
+				lhs = new Operation(lhs, KBoolAnd, 'and',  next());
+			}
+
+			else if (peek == '|'.code && reader.peek(1) == '|'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KBoolOr, '||',  next());
+			} else if (peek == 'o'.code && reader.peek(1) == 'r'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KBoolOr, 'or',  next());
+			}
+
+			else if (peek == '^'.code && reader.peek(1) == '^'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KBoolXor, '^^',  next());
+			} else if (peek == 'x'.code && reader.peek(1) == 'o'.code && reader.peek(2) == 'r'.code) {
+				reader.skip(3);
+				lhs = new Operation(lhs, KBoolXor, 'xor',  next());
+			} else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
+	}
+
+	private function readBinaryShift(): Returnable {
 		var next = readAdditionSubtraction;
 		var lhs = next();
 		while(true) {
