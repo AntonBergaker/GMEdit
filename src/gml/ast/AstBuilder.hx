@@ -1,5 +1,8 @@
 package gml.ast;
 
+import parsers.linter.GmlLinterKind;
+import tools.Dictionary;
+import parsers.linter.GmlLinterInit;
 import parsers.GmlReader;
 import tools.Aliases.GmlCode;
 import gml.ast.tree.*;
@@ -9,9 +12,15 @@ class AstBuilder {
 	var gmlVersion:GmlVersion;
 	var errors:Array<String>;
 	var lastAst:AstNode;
+	var keywords:Dictionary<GmlLinterKind>;
+
+	var operators = [
+
+	];
 
 	public function new(gmlVersion:GmlVersion) {
 		this.gmlVersion = gmlVersion;
+		keywords = GmlLinterInit.keywords(gmlVersion.config.additionalKeywords);
 	}
 
 	private function addError(error: String) {
@@ -56,7 +65,7 @@ class AstBuilder {
 				statements.push(statement);
 			}
 		}
-
+		lastAst.after += reader.readNops();
 		return new StatementList(statements);
 	}
 
@@ -65,6 +74,7 @@ class AstBuilder {
 
 		inline function localReturn(ast:AstNode):AstNode {
 			ast.before = pre + ast.before;
+			ast.after += reader.readNopsTillNewline();
 			return returnAst(ast);
 		}
 
@@ -79,10 +89,15 @@ class AstBuilder {
 		}
 
 		var identifier = reader.readIdent();
-		switch (identifier) {
-			case "var":
-				return localReturn(readLocalVarDefinition());
-		} 
+		var keyword = keywords[identifier];
+		if (keyword != null) {
+			switch (keyword) {
+				case KVar:
+					return localReturn(readLocalVarDefinition());
+				default:
+					return null;
+			} 
+		}
 
 		return null;
 	}
@@ -141,6 +156,13 @@ class AstBuilder {
 		return returnAst(readLiteral());
 	}
 
+
+
+
+
+
+
+
 	private function readLiteral() : Returnable {
 		var before = reader.readNops();
 		var peek = reader.peek();
@@ -156,6 +178,7 @@ class AstBuilder {
 			ast.before = before;
 			return returnAst(ast);
 		}
+
 		// If the literal is a string
 		if (peek == '"'.code || peek == "'".code ||
 			peek == '`'.code) {

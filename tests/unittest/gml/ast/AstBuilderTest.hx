@@ -52,7 +52,7 @@ class AstBuilderTest {
 	}
 
 	@Test public function testExpression() {
-		treeEquals("var a:number = 5",
+		treeEquals("var a:number = 5 + 3",
 			new LocalVarDefinition([
 				new VarDefinitionEntry("a",
 					new TypeDefinition("number"),
@@ -61,6 +61,14 @@ class AstBuilderTest {
 			])
 		);
 
+		treeEquals("var a:number = 5 + 3 * 2",
+		new LocalVarDefinition([
+			new VarDefinitionEntry("a",
+				new TypeDefinition("number"),
+				new NumberLiteral("5")
+			)
+		])
+	);
 	}
 
 
@@ -79,16 +87,7 @@ class AstBuilderTest {
 		}
 	}
 
-
 	private function treeEquals(gmlCode:String, statementList:EitherType<Array<AstNode>, AstNode>) {
-		if ((statementList is Array) == false) {
-			statementList = [statementList];
-		}
-		var tree = new AstCode(new StatementList(statementList));
-		var compiledTree = builder.build(gmlCode);
-		var equals = AstNode.equals(tree, compiledTree);
-		if (!equals) {
-			Assert.fail('Tree\'s are not identical\n\nExpected:\n${tree.toSyntaxString()}\n\nGot:\n${compiledTree.toSyntaxString()}');
-		}
+		return AstTestHelper.treeEquals(gmlCode, statementList, builder);
 	}
 }
