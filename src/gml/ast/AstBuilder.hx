@@ -154,6 +154,25 @@ class AstBuilder {
 
 	// These are very expressive and could all be generalized, but there's no good structure to store it in
 	
+	private function readBooleanComparisons() : Returnable {
+		var next = readAdditionSubtraction;
+		var lhs = next();
+		while(true) {
+			var peek = reader.peek();
+			if (peek == '>'.code && reader.peek(1) == '>'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KShr, '>>', next());
+			} else if (peek == '<'.code && reader.peek(1) == '<'.code) {
+				reader.skip(2);
+				lhs = new Operation(lhs, KShl, '<<', next());
+			} else {
+				break;
+			}
+		}
+
+		return returnAst(lhs);
+	}
+
 	private function readBinaryShift() : Returnable {
 		var next = readAdditionSubtraction;
 		var lhs = next();
@@ -161,10 +180,10 @@ class AstBuilder {
 			var peek = reader.peek();
 			if (peek == '>'.code && reader.peek(1) == '>'.code) {
 				reader.skip(2);
-				lhs = new Operation(lhs, next(), KShr, '>>');
+				lhs = new Operation(lhs, KShr, '>>',  next());
 			} else if (peek == '<'.code && reader.peek(1) == '<'.code) {
 				reader.skip(2);
-				lhs = new Operation(lhs, next(), KShl, '<<');
+				lhs = new Operation(lhs, KShl, '<<',  next());
 			} else {
 				break;
 			}
@@ -174,15 +193,16 @@ class AstBuilder {
 	}
 	
 	private function readAdditionSubtraction() : Returnable {
-		var lhs = this.readMultiplicationDivision();
+		var next = readMultiplicationDivision;
+		var lhs = next();
 		while(true) {
 			var peek = reader.peek();
 			if (peek == '+'.code) {
 				reader.skip();
-				lhs = new Operation(lhs, readMultiplicationDivision(), KAdd, '+');
+				lhs = new Operation(lhs, KAdd, '+', next());
 			} else if (peek == '-'.code) {
 				reader.skip();
-				lhs = new Operation(lhs, readMultiplicationDivision(), KSub, '-');
+				lhs = new Operation(lhs, KSub, '-', next());
 			} else {
 				break;
 			}
@@ -193,22 +213,23 @@ class AstBuilder {
 
 
 	private function readMultiplicationDivision() : Returnable {
-		var lhs = this.readLiteral();
+		var next = readLiteral;
+		var lhs = next();
 
 		while(true) {
 			var peek = reader.peek();
 			if (peek == '*'.code) {
 				reader.skip();
-				lhs = new Operation(lhs, readLiteral(), KMul, '*');
+				lhs = new Operation(lhs, KMul, '*', next());
 			} else if (peek == '/'.code) {
 				reader.skip();
-				lhs = new Operation(lhs, readLiteral(), KDiv, '/');
+				lhs = new Operation(lhs, KDiv, '/', next());
 			} else if (peek == 'm'.code && reader.peek(1) == 'o'.code && reader.peek(2) == 'd'.code) {
 				reader.skip(3);
-				lhs = new Operation(lhs, readLiteral(), KMod, 'mod');
+				lhs = new Operation(lhs, KMod, 'mod', next());
 			} else if (peek == 'd'.code && reader.peek(1) == 'i'.code && reader.peek(2) == 'v'.code) {
 				reader.skip(3);
-				lhs = new Operation(lhs, readLiteral(), KDiv, 'div');
+				lhs = new Operation(lhs, KDiv, 'div', next());
 			} else {
 				break;
 			}

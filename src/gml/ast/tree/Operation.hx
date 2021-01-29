@@ -8,7 +8,7 @@ class Operation extends Returnable {
 	public var opString: String;
 	public var opKind: GmlLinterKind;
 
-    public function new(lhs: Returnable, rhs:Returnable, opKind: GmlLinterKind, opString: String) {
+    public function new(lhs: Returnable, opKind: GmlLinterKind, opString: String, rhs:Returnable) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 		this.opString = opString;
