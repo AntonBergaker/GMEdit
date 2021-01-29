@@ -196,7 +196,7 @@ class GmlLinter {
 	//
 	var keywords:Dictionary<GmlLinterKind>;
 	function initKeywords() {
-		keywords = GmlLinterInit.keywords(version.config.additionalKeywords);
+		keywords = GmlLinterInit.keywords(version.config);
 	}
 	
 	//
