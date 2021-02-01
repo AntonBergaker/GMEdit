@@ -1,51 +1,53 @@
 package gml.ast;
 
+import ui.Preferences;
 import haxe.extern.EitherType;
 import gml.ast.tree.*;
 import massive.munit.Assert;
+import gml.ast.AstShorthand.*;
 
 class LocalVarDefinitionTest {
 	var builder:AstBuilder;
 	@Before public function setup() {
-		builder = new AstBuilder(GmlVersion.v2);
+		builder = new AstBuilder(GmlVersion.v2, Preferences.current);
 	}
 
 	@Test public function testLocalVarDefinition() {
 		treeEquals("var a = 5",
-			new LocalVarDefinition([
-				new LocalVarDefinitionEntry("a", null,
-					new NumberLiteral("5")
+			cLocalVarDefinition([
+				cLocalVarDefinitionEntry("a", null,
+					cNumberLiteral("5")
 				)
 			])
 		);
 
 		treeEquals("var a:number = 5",
-			new LocalVarDefinition([
-				new LocalVarDefinitionEntry("a",
-					new TypeDefinition("number"),
-					new NumberLiteral("5")
+			cLocalVarDefinition([
+				cLocalVarDefinitionEntry("a",
+					cTypeDefinition("number"),
+					cNumberLiteral("5")
 				)
 			])
 		);
 
 		treeEquals("var a, b = 5",
-			new LocalVarDefinition([
-				new LocalVarDefinitionEntry("a", null, null),
-				new LocalVarDefinitionEntry("b", null,
-					new NumberLiteral("5")
+			cLocalVarDefinition([
+				cLocalVarDefinitionEntry("a", null, null),
+				cLocalVarDefinitionEntry("b", null,
+					cNumberLiteral("5")
 				)
 			])
 		);
 
 		treeEquals("var a:number = 4, b:string = \"5\"",
-			new LocalVarDefinition([
-				new LocalVarDefinitionEntry("a", 
-					new TypeDefinition("number"),
-					new NumberLiteral("4")
+			cLocalVarDefinition([
+				cLocalVarDefinitionEntry("a", 
+					cTypeDefinition("number"),
+					cNumberLiteral("4")
 				),
-				new LocalVarDefinitionEntry("b", 
-					new TypeDefinition("string"),
-					new StringLiteral("5")
+				cLocalVarDefinitionEntry("b", 
+					cTypeDefinition("string"),
+					cStringLiteral("5")
 				)
 			])
 		);

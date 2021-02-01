@@ -1,10 +1,14 @@
 package gml.ast.tree;
 
+import gml.tokenizer.Token;
+
 
 class LocalVarDefinition extends AstNode {
+	public var varToken: Token;
     public var varDefinitions:Array<LocalVarDefinitionEntry>;
 
-    public function new(varDefinitions:Array<LocalVarDefinitionEntry>) {
+    public function new(varToken: Token, varDefinitions:Array<LocalVarDefinitionEntry>) {
+		this.varToken = varToken;
         this.varDefinitions = varDefinitions;
     }
 
@@ -12,7 +16,7 @@ class LocalVarDefinition extends AstNode {
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return before + "var" +
+		return before + varToken.toSource() +
 			varDefinitions.map(function (statement) {
 				return statement.toCompleteString();
 			}).join(',') +

@@ -1,13 +1,15 @@
 package gml.ast.tree;
 
+import gml.tokenizer.Token;
+
 class LocalVarDefinitionEntry extends AstNode {
-	public var variableName: String;
+	public var variableToken: Token;
 	public var afterIdentifier: String = "";
 	public var type: TypeDefinition;
 	public var initialValue: Returnable;
 	
-	public function new(variableName: String, type: TypeDefinition, initialValue: Returnable) {
-		this.variableName = variableName;
+	public function new(variableToken: Token, type: TypeDefinition, initialValue: Returnable) {
+		this.variableToken = variableToken;
 		this.type = type;
 		this.initialValue = initialValue;
 	}
@@ -16,7 +18,7 @@ class LocalVarDefinitionEntry extends AstNode {
 	**/
 	public override function toCompleteString() : String {
 		return before +
-			this.variableName + afterIdentifier +
+			this.variableToken.toSource() + afterIdentifier +
 			(this.type == null ? '' : ':' + this.type.toCompleteString()) +
 			(this.initialValue == null ? '' : '=' + this.initialValue.toCompleteString()) +
 		after;
@@ -25,7 +27,7 @@ class LocalVarDefinitionEntry extends AstNode {
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
-		return this.variableName +
+		return this.variableToken.sourceString +
 		(this.type == null ? '' : ': ' + this.type.toSyntaxString()) +
 		(this.initialValue == null ? '' : ' = ' + this.initialValue.toSyntaxString());
 	}
@@ -50,7 +52,7 @@ class LocalVarDefinitionEntry extends AstNode {
 	public function valueEquals(other:LocalVarDefinitionEntry): Bool {
 		return 
 			AstNode.equals(initialValue, other.initialValue) && 
-			variableName == other.variableName &&
+			Token.equals(variableToken, other.variableToken) &&
 			AstNode.equals(type, other.type);
 	}
 }

@@ -1,13 +1,15 @@
 package gml.ast.tree;
 
+import gml.tokenizer.Token;
+
 class Assignment extends AstNode {
-	public var variableName: String;
+	public var variableToken: Token;
 	public var afterIdentifier: String = "";
 	public var type: TypeDefinition;
 	public var value: Returnable;
 	
-	public function new(variableName: String, type: TypeDefinition, value: Returnable) {
-		this.variableName = variableName;
+	public function new(variableToken: Token, type: TypeDefinition, value: Returnable) {
+		this.variableToken = variableToken;
 		this.type = type;
 		this.value = value;
 	}
@@ -16,7 +18,7 @@ class Assignment extends AstNode {
 	**/
 	public override function toCompleteString() : String {
 		return before +
-			this.variableName + afterIdentifier +
+			this.variableToken.toSource() + afterIdentifier +
 			(this.type == null ? '' : ':' + this.type.toCompleteString()) +
 			(this.value == null ? '' : '=' + this.value.toCompleteString()) +
 		after;
@@ -25,7 +27,7 @@ class Assignment extends AstNode {
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
-		return this.variableName +
+		return this.variableToken.sourceString +
 		(this.type == null ? '' : ': ' + this.type.toSyntaxString()) +
 		(this.value == null ? '' : ' = ' + this.value.toSyntaxString());
 	}
@@ -44,7 +46,7 @@ class Assignment extends AstNode {
 	public function valueEquals(other:Assignment): Bool {
 		return 
 			AstNode.equals(value, other.value) && 
-			variableName == other.variableName &&
+			Token.equals(variableToken, other.variableToken) &&
 			AstNode.equals(type, other.type);
 	}
 }

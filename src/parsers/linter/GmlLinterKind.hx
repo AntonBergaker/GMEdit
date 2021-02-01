@@ -22,12 +22,9 @@ enum abstract GmlLinterKind(Int) {
 	var KLet;
 	var KGhostVar; // no longer in scope
 	var KMacro;
+	var KMacroDefinition;
 	var KEnum;
-	
-	// setops:
-	var KSet; // =
-	var KSetOp; // generic (+=, -=, etc.)
-	
+
 	// boolean:
 	var KEQ; // ==
 	var KNE; // !=
@@ -55,8 +52,25 @@ enum abstract GmlLinterKind(Int) {
 	var KShl; // <<
 	var KShr; // >>
 	var KBitNot; // ~
+
+	// setops:
+	var KSet; // =
+	var KSetOp; // generic (+=, -=, etc.)
+
+	// numeric assignment operations:
+	var KSetAdd; // +=
+	var KSetSub; // -=
+	var KSetMul; // *=
+	var KSetDiv; // /=
+	var KSetMod; // %=
 	
-	//
+	// bitwise assignment operations:
+	var KSetAnd; // &=
+	var KSetOr; // |=
+	var KSetXor; // ^=
+
+
+	// Inc/dec
 	var KInc; // ++
 	var KDec; // --
 	
@@ -126,6 +140,7 @@ enum abstract GmlLinterKind(Int) {
 	// syntax extensions:
 	var KMFuncDecl; // #mfunc
 	var KArgs;
+	var KGmcr;
 	var KLambda;
 	var KLamDef;
 	var KImport;
@@ -139,8 +154,17 @@ enum abstract GmlLinterKind(Int) {
 	var KLiveIn; // `field in object`
 	var KLiveWait; // `wait <time>`
 	
+	// Whitespace
+	var KWhitespace;
+
+	// Pragma
+	var KPragma;
+
+	// Unknown/error token
+	var KUnknown;
+
 	var KMaxKind;
-	
+
 	// helpers:
 	public inline function getIndex():Int {
 		return cast this;

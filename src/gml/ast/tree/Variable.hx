@@ -1,22 +1,24 @@
 package gml.ast.tree;
 
-class Variable extends Returnable {
-    public var name : String;
+import gml.tokenizer.Token;
 
-    public function new(name:String) {
+class Variable extends Returnable {
+    public var name : Token;
+
+    public function new(name:Token) {
 		this.name = name;
     }
 
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return before + name + after;
+		return before + name.toSource() + after;
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
-		return name;
+		return name.sourceString;
 	}
 
 	/** Returns all child nodes to this node
@@ -28,6 +30,6 @@ class Variable extends Returnable {
 	/** Compares against another of itself
 	**/
 	public function valueEquals(other:Variable): Bool {
-		return name == other.name;
+		return Token.equals(name, other.name);
 	}
 }

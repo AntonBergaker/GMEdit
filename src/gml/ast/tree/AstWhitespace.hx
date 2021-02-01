@@ -1,24 +1,22 @@
 package gml.ast.tree;
-
 import gml.tokenizer.Token;
 
-class StringLiteral extends Returnable {
-    public var string : Token;
-
-    public function new(string:Token) {
-		this.string = string;
+class AstWhitespace extends AstNode {
+	var content: String;
+    public function new(whitespace: String) {
+		content = whitespace;
     }
 
 	/** Returns the string as it was originally read
 	**/
 	public override function toCompleteString() : String {
-		return before + "\"" + string.toSource() + "\"" + after;
+		return before + content + after;
 	}
 
 	/** Returns a string representing the syntax, with everything including unnecessary parenthesis
 	**/
 	public override function toSyntaxString() : String {
-		return "\"" + string.sourceString + "\"";
+		return "";
 	}
 
 	/** Returns all child nodes to this node
@@ -29,7 +27,7 @@ class StringLiteral extends Returnable {
 
 	/** Compares against another of itself
 	**/
-	public function valueEquals(other:StringLiteral): Bool {
-		return Token.equals(string, other.string);
+	public function valueEquals(other:NumberLiteral): Bool {
+		return true;
 	}
 }

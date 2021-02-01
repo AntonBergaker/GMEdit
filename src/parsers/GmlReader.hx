@@ -50,6 +50,13 @@ using tools.NativeString;
 			}; break;
 		}
 	}
+
+	/** Reads the remainder of the current line */
+	public function readLine() {
+		var start = pos;
+		skipLine();
+		return substring(start,pos);
+	}
 	
 	/** Skips a single `\n` / `\r\n`, if any */
 	public function skipLineEnd() {
@@ -175,9 +182,9 @@ using tools.NativeString;
 	}
 
 	/** Reads a number*/
-	public function readNumber():String {
+	public function readNumber(canDot:Bool = true):String {
 		var start = pos;
-		skipNumber();
+		skipNumber(canDot);
 		return substring(start,pos);
 	}
 
