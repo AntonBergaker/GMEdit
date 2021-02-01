@@ -811,23 +811,20 @@ class GmlSeeker {
 					continue;
 				}
 				
-				// GMS2+ JSDoc (`/// @param name`) ?:
-				if (v.hasJSDoc()) {
-					mt = jsDoc_param.exec(s);
-					if (mt != null) {
-						if (jsDocArgs == null) {
-							jsDocArgs = [];
-							jsDocTypes = [];
-						}
-						var argText = mt[2];
-						var argType = mt[1];
-						for (arg in argText.split(",")) {
-							jsDocArgs.push(arg);
-							jsDocTypes.push(argType);
-							if (arg.contains("...")) jsDocRest = true;
-						}
-						continue; // found!
+				mt = jsDoc_param.exec(s);
+				if (mt != null) {
+					if (jsDocArgs == null) {
+						jsDocArgs = [];
+						jsDocTypes = [];
 					}
+					var argText = mt[2];
+					var argType = mt[1];
+					for (arg in argText.split(",")) {
+						jsDocArgs.push(arg);
+						jsDocTypes.push(argType);
+						if (arg.contains("...")) jsDocRest = true;
+					}
+					continue; // found!
 				}
 				
 				if (hasFunctionLiterals) {
@@ -1140,7 +1137,7 @@ class GmlSeeker {
 						if (s != null && s.startsWith("/*")) { // name/*...*/
 							mt = localType.exec(s);
 							if (mt != null) {
-								locals.type.set(name, mt[1]);
+								//locals.type.set(name, mt[1]);
 							}
 							s = find(flags);
 						}
