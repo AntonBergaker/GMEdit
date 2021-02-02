@@ -1,5 +1,6 @@
 package gml.ast;
 
+import js.html.IFrameElement;
 import ui.preferences.PrefData;
 import gml.tokenizer.Token;
 import tools.StringBuilder;
@@ -74,7 +75,7 @@ class AstBuilder {
 				break;
 			}
 
-			var statement = readStatement();
+			var statement = readStatement(true);
 			if (statement != null) {
 				statement.after += readOneWhitespace();
 				statements.push(statement);
@@ -85,8 +86,16 @@ class AstBuilder {
 		return new StatementList(statements);
 	}
 
-	private function readStatement():AstNode {
-		var pre = readAndCollapseWhitespace();
+	private function readStatement(allowWhitespaceLine: Bool):AstNode {
+		var pre;
+		if (allowWhitespaceLine) {
+			pre = readOneWhitespace();
+			if (pre.charCodeAt(pre.length-1) == '\n'.code) {
+				return returnAst(new AstWhitespace(pre));
+			}
+		} else {
+			pre = readAndCollapseWhitespace();
+		}
 
 		inline function localReturn(ast:AstNode):AstNode {
 			ast.before = pre + ast.before;
@@ -119,12 +128,23 @@ class AstBuilder {
 					return localReturn(assignment);
 				} 
 
+			case KIf:
+				return localReturn(readIf());
+
 			default: 
 		}
 		if (pre != "") {
-			new AstWhitespace(pre);
+			return returnAst(new AstWhitespace(pre));
 		}
 		return null;
+	}
+
+	/**Assumes if has already been read*/
+	private function readIf() {
+		var condition = readExpression();
+		var statement = readStatement(false);
+
+		return returnAst(new IfCondition(condition, statement));
 	}
 
 	/**Assumes var has already been read
@@ -154,7 +174,7 @@ class AstBuilder {
 		var before = readAndCollapseWhitespace();
 		var ident = reader.next();
 		if (ident.kind != KIdent) {
-			errors.push(">:(");
+			addError("Expected an identifier");
 			return null;
 		}
 
@@ -266,7 +286,6 @@ class AstBuilder {
 	private function readLiteral(?before:String) : Returnable {
 		function localReturn(ast: Returnable) {
 			ast.after += readOneWhitespace();
-			Console.log(ast.after);
 			return returnAst(ast);
 		}
 		if (before == null) {
@@ -275,6 +294,11 @@ class AstBuilder {
 		var next = reader.next();
 
 		switch (next.kind) {
+			case KParOpen:
+				var para = readParentheses();
+				para.before = before + para.before;
+				return localReturn(para);
+
 			case KNumber:
 				var ast = new NumberLiteral(next);
 				ast.before = before;
@@ -289,5 +313,20 @@ class AstBuilder {
 		}
 
 		return null;
+	}
+
+	/**Assumes ( has already been read */
+	private function readParentheses(): Returnable {
+		var expression = readExpression();
+
+		var nextToken = reader.next();
+		if (nextToken.kind != KParClose) {
+			addError("Expected a )");
+		}
+
+		var after = readAndCollapseWhitespace();
+		var para = new Parentheses(expression);
+		para.after = after;
+		return returnAst(para);
 	}
 }

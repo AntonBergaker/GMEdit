@@ -1,5 +1,6 @@
 package gml.ast;
 
+import gml.tokenizer.TokenHelper;
 import haxe.extern.EitherType;
 import parsers.linter.GmlLinter;
 import parsers.linter.GmlLinterKind;
@@ -31,19 +32,31 @@ class AstShorthand {
 		return new TypeDefinition(new Token(KIdent, name, 0, null));
 	}
 
-	public static function cOperation(lhs: Returnable, kind: GmlLinterKind, operation: String, rhs: Returnable): Operation {
-		return new Operation(lhs, new Token(kind, operation, 0, null), rhs);
+	public static function cOperation(lhs: Returnable, operation: String, rhs: Returnable): Operation {
+		return new Operation(lhs, new Token(TokenHelper.identifierToKind(operation), operation, 0, null), rhs);
 	}
 	
 	public static function cTernary(comparision: Returnable, lhs: Returnable, rhs: Returnable): Ternary {
 		return new Ternary(comparision, lhs, rhs);
 	}
 
-	public static function cUnary(kind: GmlLinterKind, operation: String, value: Returnable) {
-		return new Unary(value, new Token(kind, operation, 0, null));
+	public static function cUnary(operation: String, value: Returnable) {
+		return new Unary(value, new Token(TokenHelper.identifierToKind(operation), operation, 0, null));
 	}
 
 	public static function cAssignment(name: String, type: TypeDefinition, value: Returnable) {
 		return new Assignment(new Token(KIdent, name, 0, null), type, value);
+	}
+
+	public static function cParentheses(value: Returnable) {
+		return new Parentheses(value);
+	}
+
+	public static function cIfCondition(condition: Returnable, statement: AstNode) {
+		return new IfCondition(condition, statement);
+	}
+
+	public static function cStatementList(statements: Array<AstNode>) {
+		return new StatementList(statements);
 	}
 }

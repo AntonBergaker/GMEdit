@@ -21,7 +21,7 @@ class ExpressionTest {
 					cTypeDefinition("number"),
 					cOperation(
 						cNumberLiteral("5"),
-						KAdd, "+",
+						"+",
 						cNumberLiteral("3")
 					)
 				)
@@ -35,7 +35,7 @@ class ExpressionTest {
 					cTypeDefinition("number"),
 					cOperation(
 						cNumberLiteral("13"),
-						KSub, "-",
+						"-",
 						cNumberLiteral("6")
 					)
 				)
@@ -49,7 +49,7 @@ class ExpressionTest {
 					cTypeDefinition("number"),
 					cOperation(
 						cNumberLiteral("20"),
-						KMul, "*",
+						"*",
 						cNumberLiteral("4")
 					)
 				)
@@ -63,7 +63,7 @@ class ExpressionTest {
 					cTypeDefinition("number"),
 					cOperation(
 						cNumberLiteral("64"),
-						KDiv, "/",
+						"/",
 						cNumberLiteral("8")
 					)
 				)
@@ -77,10 +77,10 @@ class ExpressionTest {
 					cTypeDefinition("number"),
 					cOperation(
 						cNumberLiteral("5"),
-						KAdd,"+",
+						"+",
 						cOperation(
 							cNumberLiteral("3"),
-							KMul, '*',
+							'*',
 							cNumberLiteral("2")
 						)
 					)
@@ -96,10 +96,10 @@ class ExpressionTest {
 					cOperation(
 						cOperation(
 							cNumberLiteral("7"),
-							KMul, '*',
+							'*',
 							cNumberLiteral("8")
 						),
-						KAdd,"+",
+						"+",
 						cNumberLiteral("9")
 					)
 				)
@@ -112,8 +112,8 @@ class ExpressionTest {
 				cLocalVarDefinitionEntry("g", null,
 					cOperation(
 						cNumberLiteral("7"),
-						KMul, '*',
-						cUnary(KAdd, '+',
+						'*',
+						cUnary('+',
 							cNumberLiteral("1")
 						)
 					)
@@ -129,15 +129,35 @@ class ExpressionTest {
 					cTernary(
 						cOperation(
 							cNumberLiteral("5"),
-							KGT, '>',
+							'>',
 							cNumberLiteral("10")
 						),
 						cOperation(
 							cNumberLiteral("10"),
-							KAdd, '+',
+							'+',
 							cNumberLiteral("15")
 						),
 						cNumberLiteral("20")
+					)
+				)
+			])
+		);
+	}
+
+	@Test public function parentheses() {
+		treeEquals("var a = (1+2)*5",
+			cLocalVarDefinition([
+				cLocalVarDefinitionEntry("a", null,
+					cOperation(
+						cParentheses(
+							cOperation(
+								cNumberLiteral("1"),
+								'+',
+								cNumberLiteral("2")
+							)
+						),
+						'*',
+						cNumberLiteral("5")
 					)
 				)
 			])
