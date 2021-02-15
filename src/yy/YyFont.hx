@@ -174,6 +174,29 @@ abstract YyFont(YyFontImpl) from YyFontImpl to YyFontImpl {
 		// Nothing found, add to the end
 		this.ranges.push(range);
 	 }
+
+	/**
+	 * Clears the glyphs to within the font data
+	 */
+	 public function glyphsClear(): Void {
+		this.glyphs = {};
+	}
+
+	/**
+	 * Adds a glyph to the glyph map
+	 */
+	 public function glyphsAdd(character:Int, x:Int, y:Int, w:Int, h:Int, shift:Int, offset:Int): Void {
+		this.glyphs.set(Std.string(character), {
+			x: x,
+			y: y,
+			w: w,
+			h: h,
+			character: character,
+			shift: shift,
+			offset: offset
+		});
+	}
+
 }
 
 typedef YyFontImpl = {
@@ -200,7 +223,7 @@ typedef YyFontImpl = {
 		path:String
 	},
 	ascenderOffset:Int,
-	glyphs:{},
+	glyphs:haxe.DynamicAccess<YyFontGlyph>,
 	kerningPairs:Array<Any>,
 	ranges:Array<YyFontRange>,
 	regenerateBitmap:Bool,
@@ -211,4 +234,14 @@ typedef YyFontImpl = {
 typedef YyFontRange = {
 	lower: Int,
 	upper: Int
+}
+
+typedef YyFontGlyph = {
+	x:Int,
+	y:Int,
+	w:Int,
+	h:Int,
+	character:Int,
+	shift:Int,
+	offset:Int
 }

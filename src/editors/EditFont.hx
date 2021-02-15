@@ -1,5 +1,6 @@
 package editors;
 
+import tools.FontGenerator;
 import electron.FileSystem;
 import haxe.io.Path;
 import gml.GmlVersion;
@@ -79,20 +80,27 @@ class EditFont extends Editor {
 		return Path.join([directory, font.name]) + ".png";
 	}
 
-	public override function save(): Bool {
+	public function childSave(deleteOldImage:Bool): Bool {
 		var newFontJson = YyJson.stringify(font, Project.current.yyExtJson);
 		file.writeContent(newFontJson);
 		file.changed = false;
 
-		// Remove the old .png if it exists
-		var directory = Path.directory(file.path);
-		var imagePath = getImageFileName();
-		if (FileSystem.existsSync(imagePath)) {
-			imageFileExists = false;
-			FileSystem.renameSync(imagePath, Path.join([directory, font.name]) + ".old.png");
+		if (deleteOldImage) {
+			// Remove the old .png if it exists
+			var directory = Path.directory(file.path);
+			var imagePath = getImageFileName();
+			if (FileSystem.existsSync(imagePath)) {
+				imageFileExists = false;
+				FileSystem.renameSync(imagePath, Path.join([directory, font.name]) + ".old.png");
+			}
 		}
 
+		trace("Saved!");
 		return true;
+	}
+
+	public override function save(): Bool {
+		return childSave(true);
 	}
 
 	private function onFontsLoaded(fonts: Array<FontDescriptor>) {
@@ -659,6 +667,16 @@ class EditFont extends Editor {
 	
 				optionsDiv.append(needsRegenerationWarning);
 			}
+
+			{
+				var generateButton = document.createButtonElement();
+				generateButton.classList.add('highlighted-button');
+				generateButton.innerHTML = "Generate";
+				generateButton.addEventListener("click", function() {
+					FontGenerator.export(font,getCurrentFont(),getImageFileName(),() -> childSave(false));
+				});
+				optionsDiv.appendChild(generateButton);
+			}
 	
 			container.appendChild(optionsDiv);
 		}
@@ -684,7 +702,7 @@ class EditFont extends Editor {
 			}
 
 			container.appendChild(previewArea);
-
+		
 		}
 
 		element.appendChild(container);
