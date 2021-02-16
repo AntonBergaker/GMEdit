@@ -92,10 +92,10 @@ class EditFont extends Editor {
 			if (FileSystem.existsSync(imagePath)) {
 				imageFileExists = false;
 				FileSystem.renameSync(imagePath, Path.join([directory, font.name]) + ".old.png");
+				onImagefileChanged();
 			}
 		}
 
-		trace("Saved!");
 		return true;
 	}
 
@@ -442,7 +442,7 @@ class EditFont extends Editor {
 				continue;
 			}
 			last = charCode;
-			str+=String.fromCharCode(charCode);
+			str+=NativeString.fromCodePoint(charCode);
 		}
 
 		previewTextArea.value = str;
