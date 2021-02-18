@@ -128,4 +128,42 @@ class YyFontTest {
 		myFont.addRange({lower: 50, upper: 82});
 		Assert.areEqual([{lower: 50, upper: 85}], myFont.ranges);
 	}
+
+	@Test public function TestGetAllCharacters() {
+		var myFont:YyFont = YyFont.generateDefault({name: "", path: ""}, "myFont");
+		myFont.ranges = [];
+
+		myFont.addRange({lower: 'a'.code, upper: 'a'.code});
+
+		Assert.areEqual("a", myFont.getAllCharacters());
+
+
+		myFont.ranges = [];
+
+		myFont.addRange({lower: 'a'.code, upper: 'z'.code});
+
+		Assert.areEqual("abcdefghijklmnopqrstuvwxyz", myFont.getAllCharacters());
+
+
+		myFont.ranges = [];
+
+		myFont.addRange({lower: 'a'.code, upper: 'b'.code});
+		myFont.addRange({lower: 'e'.code, upper: 'f'.code});
+
+		Assert.areEqual("abef", myFont.getAllCharacters());
+
+
+		myFont.ranges = [];
+
+		myFont.addRange({lower: 128, upper: 256});
+
+		Assert.areEqual(256-128+1, myFont.getAllCharacters().length);
+
+
+		myFont.ranges = [];
+
+		myFont.addRange({lower: 196, upper: 197});
+
+		Assert.areEqual("ÄÅ", myFont.getAllCharacters());
+	}
 }
